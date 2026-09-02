@@ -4,9 +4,9 @@ import { CreditService } from './credit.service';
 import { PrismaModule } from 'src/prisma/prisma.module';
 
 @Module({
-  imports:[PrismaModule],
+  imports: [PrismaModule],
   controllers: [CreditController],
-  providers:[CreditService],
-  exports:[CreditService]
+  providers: [CreditService],
+  exports: [CreditService],
 })
 export class CreditModule {}

@@ -1,13 +1,31 @@
-import {IsNotEmpty,IsNumber,IsString,IsPositive, IsCreditCard} from 'class-validator'
+import {
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+  IsPositive,
+  IsCreditCard,
+  Min,
+} from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
 
-export class TransferDto{
-    @IsString()
-    @IsNotEmpty()
-    @IsCreditCard({message:'неверный формат карты.'})
-    toCardNumber!:string;
-    
-    @IsNumber()
-    @IsPositive()
-    @IsNotEmpty()
-    amount!:number;
+export class TransferDto {
+  @ApiProperty({
+    description: 'Номер карты получателя',
+    example: '4532015112830366',
+  })
+  @IsString()
+  @IsNotEmpty({ message: 'Номер карты обязателен' })
+  @IsCreditCard({ message: 'неверный формат карты.' })
+  toCardNumber!: string;
+
+  @ApiProperty({
+    description: 'Сумма перевода',
+    example: 500,
+    minimum: 50,
+  })
+  @IsNumber({}, { message: 'Сумма должна быть числом' })
+  @IsPositive({ message: 'Сумма должна быть больше нуля' })
+  @IsNotEmpty()
+  @Min(50, { message: 'Минимальная сумма перевода - 50' })
+  amount!: number;
 }
