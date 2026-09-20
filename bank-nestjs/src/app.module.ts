@@ -8,6 +8,7 @@ import { AuthModule } from './auth/auth.module';
 import { TransfersModule } from './transfers/transfers.module';
 import { CreditModule } from './credit/credit.module';
 import { AnalyticsModule } from './analytics/analytics.module';
+import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { AnalyticsModule } from './analytics/analytics.module';
     AuthModule,
     AnalyticsModule,
     CreditModule,
+    MailModule,
   ],
   providers: [],
 })

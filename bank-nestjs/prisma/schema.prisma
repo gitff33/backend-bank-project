@@ -13,6 +13,8 @@ model User {
   password  String    @map("password")
   FirstName String?   @map("first_name")
   LastName  String?   @map("last_name")
+  isEmailVerified Boolean @default(false) @map("is_email_verified")
+
   createdAt DateTime  @default(now())
   updatedAt DateTime  @default(now())
   accounts  Account[]

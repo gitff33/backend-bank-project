@@ -14,7 +14,7 @@ export class AnalyticsController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Общая аналитика всех данных пользователя' })
   @ApiResponse({
-    status: 201,
+    status: 200,
     description: 'Сводные данные аналитики успешно получены.',
   })
   @ApiResponse({ status: 401, description: 'Неавторизован' })

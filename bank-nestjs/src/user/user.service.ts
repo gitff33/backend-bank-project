@@ -1,18 +1,30 @@
 import {
   ConflictException,
   Injectable,
+  Inject,
   NotFoundException,
+  BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcrypt';
 import { LoginUserDto } from './dto/login-user.dto';
 import { generateFakeCardData } from '../utils/generate.card';
+import { ClientProxy } from '@nestjs/microservices';
+import type { Cache } from 'cache-manager';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { CreateUserDto } from './dto/create-user.dto';
+import { SendVerificationCodeDto } from './dto/send-verification-code.dto';
+import { VerifyEmailDto } from './dto/verify-email.dto';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class UserService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    @Inject('MAIL-SERVICE') private readonly mailClient: ClientProxy,
+    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
+  ) {}
 
   async create(dto: CreateUserDto) {
     const salt = await bcrypt.genSalt(10);
@@ -63,6 +75,73 @@ export class UserService {
     });
   }
 
+  async login(dto: LoginUserDto) {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        email: dto.email,
+      },
+    });
+    if (!user) {
+      throw new NotFoundException('неверный email или пароль...');
+    }
+    const isPasswordQuals = await bcrypt.compare(dto.password, user.password);
+
+    if (!isPasswordQuals) {
+      throw new NotFoundException('неверный email или пароль');
+    }
+    return user;
+  }
+
+  async sendVerificationCode(dto: SendVerificationCodeDto) {
+    const { email } = dto;
+    const code = crypto.randomInt(100000, 999999).toString();
+    const redisKey = `verify_code:${email}`;
+
+    await this.cacheManager.set<string>(redisKey, code, 300000);
+
+    this.mailClient.emit('send_verification_code', {
+      email,
+      code,
+    });
+
+    return { message: 'Код подтверждения успешно отправлен на почту.' };
+  }
+
+  async verifyEmail(dto: VerifyEmailDto) {
+    const { email, code } = dto;
+    const redisKey = `verify_code:${email}`;
+
+    const savedCode = await this.cacheManager.get<string>(redisKey);
+
+    if (!savedCode) {
+      throw new BadRequestException(
+        'Код подтверждения истек или не запрашивался.',
+      );
+    }
+    if (savedCode !== code) {
+      throw new BadRequestException('Неверный код подтверждения.');
+    }
+
+    await this.cacheManager.del(redisKey);
+
+    await this.prisma.user.update({
+      where: { email },
+      data: { isEmailVerified: true },
+    });
+
+    return { message: 'Почта успешно подтверждена.' };
+  }
+
+  async findOne(id: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+    });
+    if (!user) {
+      throw new NotFoundException('такого юзера нету в базе');
+    }
+    return user;
+  }
+
   async createCardForAccount(userId: string) {
     const account = await this.prisma.account.findUnique({
       where: { userId },
@@ -84,39 +163,13 @@ export class UserService {
     });
   }
 
-  async login(dto: LoginUserDto) {
-    const user = await this.prisma.user.findUnique({
-      where: {
-        email: dto.email,
-      },
-    });
-    if (!user) {
-      throw new NotFoundException('неверный email или пароль...');
-    }
-    const isPasswordQuals = await bcrypt.compare(dto.password, user.password);
-
-    if (!isPasswordQuals) {
-      throw new NotFoundException('неверный email или пароль');
-    }
-    return user;
-  }
-
-  async findOne(id: string) {
-    const user = await this.prisma.user.findUnique({
-      where: { id },
-    });
-    if (!user) {
-      throw new NotFoundException('такого юзера нету в базе');
-    }
-    return user;
-  }
-
   async getProfile(id: string) {
     const user = await this.prisma.user.findUnique({
       where: { id },
       select: {
         id: true,
         email: true,
+        isEmailVerified: true,
         FirstName: true,
         LastName: true,
         createdAt: true,

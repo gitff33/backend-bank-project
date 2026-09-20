@@ -65,7 +65,6 @@ export class TransfersService {
       return transaction;
     });
   }
-
   async getHistory(userId: string) {
     const userAccount = await this.prisma.account.findFirst({
       where: { userId },
@@ -77,24 +76,34 @@ export class TransfersService {
       where: {
         OR: [
           { fromAccountId: userAccount.id },
+
           { toAccountId: userAccount.id },
         ],
       },
+
       orderBy: {
         createdAt: 'desc',
       },
+
       select: {
         id: true,
+
         amount: true,
+
         status: true,
+
         createdAt: true,
+
         fromAccount: {
           select: {
             id: true,
+
             user: {
               select: {
                 email: true,
+
                 FirstName: true,
+
                 LastName: true,
               },
             },

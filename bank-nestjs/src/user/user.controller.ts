@@ -8,6 +8,8 @@ import {
   Query,
   UseGuards,
   UseInterceptors,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -24,6 +26,8 @@ import { LoginUserDto } from './dto/login-user.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { ClearCacheInterceptor } from 'src/common/interceptors/clear-cache.interceptor';
 import { InvalidateCache } from 'src/common/decorators/invalidate-cache.decorator';
+import { SendVerificationCodeDto } from './dto/send-verification-code.dto';
+import { VerifyEmailDto } from './dto/verify-email.dto';
 @ApiTags('Пользователи')
 @Controller('user')
 @UseInterceptors(ClearCacheInterceptor)
@@ -50,6 +54,33 @@ export class UserController {
   @Post('login')
   async login(@Body() dto: LoginUserDto) {
     return await this.userService.login(dto);
+  }
+
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Запрос кода подтверждения Email' })
+  @ApiResponse({ status: 200, description: 'Код успешно отправлен.' })
+  @ApiResponse({
+    status: 400,
+    description: 'Некорректный email или пользователь не найден',
+  })
+  @ApiResponse({ status: 401, description: 'Неавторизован' })
+  @UseGuards(AuthGuard('jwt'))
+  @Post('send-verification')
+  @HttpCode(HttpStatus.OK)
+  async SendVerificationCodeDto(@Body() dto: SendVerificationCodeDto) {
+    return this.userService.sendVerificationCode(dto);
+  }
+
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Подтверждение Email с помощью кода' })
+  @ApiResponse({ status: 200, description: 'Email успешно подтвержден' })
+  @ApiResponse({ status: 400, description: 'Неверный или истекший код' })
+  @ApiResponse({ status: 401, description: 'Неавторизован' })
+  @UseGuards(AuthGuard('jwt'))
+  @Post('verify-email')
+  @HttpCode(HttpStatus.OK)
+  async verifyEmail(@Body() dto: VerifyEmailDto) {
+    return this.userService.verifyEmail(dto);
   }
 
   @ApiBearerAuth()
