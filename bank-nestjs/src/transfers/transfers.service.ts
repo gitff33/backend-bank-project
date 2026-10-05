@@ -14,9 +14,8 @@ export class TransfersService {
 
     return await this.prisma.$transaction(async (tx) => {
       const senderAccount = await tx.account.findFirst({
-        where: {
-          userId: senderId,
-        },
+        where: { userId: senderId },
+        include: { user: true },
       });
       if (!senderAccount) {
         throw new NotFoundException('не удалось найти счет отправителя');

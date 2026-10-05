@@ -30,4 +30,14 @@ export class MailService {
         `,
     });
   }
+  async sendWelcomeEmail(to: string) {
+    await this.transporter.sendMail({
+      from: '"CoreBank Support" <${process.env.SMTP_USER}>',
+      to,
+      subject: 'Приветственное письмо',
+      html: `
+        <h2><b>Добро пожаловать в CoreBank!</b></h2>
+        <p>Ваш Email успешно подтвержден, спасибо за внимание!</p>`,
+    });
+  }
 }

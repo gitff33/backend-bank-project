@@ -118,7 +118,7 @@ export class UserService {
         'Код подтверждения истек или не запрашивался.',
       );
     }
-    if (savedCode !== code) {
+    if (String(savedCode) !== String(code)) {
       throw new BadRequestException('Неверный код подтверждения.');
     }
 
@@ -127,6 +127,10 @@ export class UserService {
     await this.prisma.user.update({
       where: { email },
       data: { isEmailVerified: true },
+    });
+
+    this.mailClient.emit('send_welcome_email', {
+      email,
     });
 
     return { message: 'Почта успешно подтверждена.' };

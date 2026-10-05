@@ -21,11 +21,11 @@ export class TransferDto {
   @ApiProperty({
     description: 'Сумма перевода',
     example: 500,
-    minimum: 50,
+    minimum: 5,
   })
   @IsNumber({}, { message: 'Сумма должна быть числом' })
   @IsPositive({ message: 'Сумма должна быть больше нуля' })
   @IsNotEmpty()
-  @Min(50, { message: 'Минимальная сумма перевода - 50' })
+  @Min(5, { message: 'Минимальная сумма перевода - 5' })
   amount!: number;
 }
