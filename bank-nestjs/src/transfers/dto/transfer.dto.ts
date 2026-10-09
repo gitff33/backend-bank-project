@@ -3,8 +3,8 @@ import {
   IsNumber,
   IsString,
   IsPositive,
-  IsCreditCard,
   Min,
+  Matches,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -15,7 +15,9 @@ export class TransferDto {
   })
   @IsString()
   @IsNotEmpty({ message: 'Номер карты обязателен' })
-  @IsCreditCard({ message: 'неверный формат карты.' })
+  @Matches(/^\d{16}$/, {
+    message: 'Номер карты должен состоять строго из 16 цифр.',
+  })
   toCardNumber!: string;
 
   @ApiProperty({

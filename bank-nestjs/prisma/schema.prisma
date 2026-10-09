@@ -11,8 +11,8 @@ model User {
   id        String    @id @default(cuid())
   email     String    @unique
   password  String    @map("password")
-  FirstName String?   @map("first_name")
-  LastName  String?   @map("last_name")
+  FirstName String   @map("first_name")
+  LastName  String   @map("last_name")
   isEmailVerified Boolean @default(false) @map("is_email_verified")
 
   createdAt DateTime  @default(now())
@@ -25,7 +25,7 @@ model User {
 model Account {
   id                   String        @id @default(cuid())
   balance              Decimal
-  currency             Value         @default(RUB)
+  currency             Value         @default(USD)
   userId               String    @unique    @map("user_id")
   createdAt            DateTime      @default(now())
   updatedAt            DateTime      @default(now())
@@ -39,7 +39,9 @@ model Account {
 
 model Transaction {
   id            String            @id @default(cuid())
-  amount        Decimal           @map("amount")
+  reference String @unique // Номер транзакции
+  amount        Decimal          @db.Decimal(10,2) @map("amount")
+  commission Decimal @default(0) @db.Decimal(10,2)
   status        TransactionStatus @default(PENDING)
   fromAccountId String            @map("from_account_id")
   toAccountId   String            @map("to_account_id")
