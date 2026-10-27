@@ -4,9 +4,10 @@ import { AuthGuard } from '@nestjs/passport';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { HttpCacheInterceptor } from 'src/common/interceptors/http-cache.interceptor';
 import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { EmailVerifiedGuard } from 'src/common/guards/email.verified.guard';
 @Controller('analytics')
 @UseInterceptors(HttpCacheInterceptor)
-@UseGuards(AuthGuard('jwt'))
+@UseGuards(AuthGuard('jwt'), EmailVerifiedGuard)
 export class AnalyticsController {
   constructor(private readonly analyticsService: AnalyticsService) {}
 

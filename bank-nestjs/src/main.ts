@@ -21,9 +21,15 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   app.useGlobalInterceptors(new ResponseInterceptor());
 
+  const rabbitMqUrl =
+    process.env.RabbitMQ_MANAGEMENT_URL || 'http://localhost:15672';
+
   const config = new DocumentBuilder()
     .setTitle('CoreBank')
-    .setDescription('Документация банковского сервиса')
+    .setDescription(
+      `Документация банковского сервиса.\n\n` +
+        `**[Открыть RabbitMQ Management UI](${rabbitMqUrl})** — панель управления очередями и сообщениями.`,
+    )
     .setVersion('1.0')
     .addBearerAuth()
     .build();

@@ -13,10 +13,11 @@ import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { ClearCacheInterceptor } from 'src/common/interceptors/clear-cache.interceptor';
 import { InvalidateCache } from 'src/common/decorators/invalidate-cache.decorator';
 import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { EmailVerifiedGuard } from 'src/common/guards/email.verified.guard';
 
 @Controller('transfers')
 @UseInterceptors(ClearCacheInterceptor)
-@UseGuards(AuthGuard('jwt'))
+@UseGuards(AuthGuard('jwt'), EmailVerifiedGuard)
 export class TransfersController {
   constructor(private readonly transfersService: TransfersService) {}
 

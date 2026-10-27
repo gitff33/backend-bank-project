@@ -28,6 +28,7 @@ import { ClearCacheInterceptor } from 'src/common/interceptors/clear-cache.inter
 import { InvalidateCache } from 'src/common/decorators/invalidate-cache.decorator';
 import { SendVerificationCodeDto } from './dto/send-verification-code.dto';
 import { VerifyEmailDto } from './dto/verify-email.dto';
+import { EmailVerifiedGuard } from 'src/common/guards/email.verified.guard';
 @ApiTags('Пользователи')
 @Controller('user')
 @UseInterceptors(ClearCacheInterceptor)
@@ -88,7 +89,7 @@ export class UserController {
   @ApiResponse({ status: 201, description: 'Карта успешно создана' })
   @ApiResponse({ status: 401, description: 'Неавторизован' })
   @ApiResponse({ status: 409, description: 'Конфликт бизнес-логики' })
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'), EmailVerifiedGuard)
   @Post('createcard')
   @InvalidateCache('/analytics/summary', '/user/profile', '/user/total')
   async createCard(@CurrentUser('id') userId: string) {
@@ -108,7 +109,7 @@ export class UserController {
     status: 404,
     description: 'Ошибка. Не удалось найти пользователя',
   })
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'), EmailVerifiedGuard)
   @Get('search/email')
   async findByEmail(@Query('email') email: string) {
     return await this.userService.findByEmail(email);
@@ -118,7 +119,7 @@ export class UserController {
   @ApiOperation({ summary: 'Получение общего баланса пользователя' })
   @ApiResponse({ status: 200, description: 'Баланс успешно подсчитан' })
   @ApiResponse({ status: 401, description: 'Неавторизован' })
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'), EmailVerifiedGuard)
   @Get('total')
   async getTotalBalance(@CurrentUser('id') userId: string) {
     return await this.userService.getTotalBalance(userId);
@@ -131,7 +132,7 @@ export class UserController {
     description: 'Общая информация о пользователе успешно получена.',
   })
   @ApiResponse({ status: 401, description: 'Неавторизован' })
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'), EmailVerifiedGuard)
   @Get('profile')
   async getProfile(@CurrentUser('id') userId: string) {
     return await this.userService.getProfile(userId);
@@ -141,7 +142,7 @@ export class UserController {
   @ApiOperation({ summary: 'Обновление имя и фамилии пользователя' })
   @ApiResponse({ status: 200, description: 'Имя и фамилия успешно обновлены.' })
   @ApiResponse({ status: 401, description: 'Неавторизован' })
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'), EmailVerifiedGuard)
   @Patch('update')
   async update(
     @CurrentUser('id') userId: string,
@@ -154,7 +155,7 @@ export class UserController {
   @ApiOperation({ summary: 'Удаление аккаунта пользователя' })
   @ApiResponse({ status: 200, description: 'Пользователь успешно удален.' })
   @ApiResponse({ status: 401, description: 'Неавторизован' })
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'), EmailVerifiedGuard)
   @Delete('delete')
   async delete(@CurrentUser('id') userId: string) {
     return await this.userService.deleteUser(userId);
